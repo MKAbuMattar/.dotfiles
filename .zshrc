@@ -1,3 +1,6 @@
+#---------------------------------------------------------------------------------------------------
+# MKAbuMattar's `.dotfiles` Arch Linux Profile
+#
 #
 #                             .
 #         ..                .''
@@ -17,21 +20,46 @@
 #        ',;;;.        .
 #        .,;;.
 #        ,;
-#       Mohammad Abu Mattar
-## Path section
-# Set $PATH if ~/.local/bin exist
+#        .
+#
+#      "The only way to do great work is to love what you do."
+#                           - Steve Jobs
+#
+#
+# Author: Mohammad Abu Mattar
+#
+# Description:
+#       This is the main configuration file for Zsh shell.
+#
+# Created: 2021-09-01
+# Updated: 2025-03-07
+#
+# GitHub: https://github.com/MKAbuMattar/.dotfiles
+#
+# Version: 4.0.0
+#---------------------------------------------------------------------------------------------------
+
+# ==========================
+# PATH Configuration
+# ==========================
 if [ -d "$HOME/.local/bin" ]; then
     export PATH=$HOME/.local/bin:$PATH
 fi
 
+# Initialize Starship prompt
 eval "$(starship init zsh)"
+
+# Set window title
 function set_win_title(){
     echo -ne "\033]0; $USER@$HOST:${PWD/$HOME/~} \007"
 }
 precmd_functions+=(set_win_title)
 
+# ==========================
+# Plugins & Enhancements
+# ==========================
 
-## Plugins section: Enable fish style features
+# Plugins section: Enable fish style features
 # Use syntax highlighting
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
@@ -45,15 +73,17 @@ source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring
 source /usr/share/fzf/key-bindings.zsh
 source /usr/share/fzf/completion.zsh
 
-# Arch Linux command-not-found support, you must have package pkgfile installed
-# https://wiki.archlinux.org/index.php/Pkgfile#.22Command_not_found.22_hook
+# Arch Linux command-not-found support
 [[ -e /usr/share/doc/pkgfile/command-not-found.zsh ]] && source /usr/share/doc/pkgfile/command-not-found.zsh
 
 # Advanced command-not-found hook
 [[ -e /usr/share/doc/find-the-command/ftc.zsh ]] && source /usr/share/doc/find-the-command/ftc.zsh
 
+# ==========================
+# Options & Settings
+# ==========================
 
-## Options section
+# General options
 setopt correct                                                  # Auto correct mistakes
 setopt extendedglob                                             # Extended globbing. Allows using regular expressions with *
 setopt nocaseglob                                               # Case insensitive globbing
@@ -68,11 +98,25 @@ setopt auto_pushd
 setopt pushd_ignore_dups
 setopt pushdminus
 
+# History settings
+HISTFILE=~/.zhistory
+HISTSIZE=50000
+SAVEHIST=10000
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt INC_APPEND_HISTORY
+setopt HIST_VERIFY
+setopt HIST_FIND_NO_DUPS
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_EXPIRE_DUPS_FIRST
+
 # Completion.
 autoload -Uz compinit
 compinit
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'       # Case insensitive tab completion
-zstyle ':completion:*' rehash true                              # automatically find new executables in path 
+zstyle ':completion:*' rehash true                              # automatically find new executables in path
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"         # Colored completion (different colors for dirs/files/etc)
 zstyle ':completion:*' completer _expand _complete _ignored _approximate
 zstyle ':completion:*' menu select
@@ -87,12 +131,10 @@ zstyle ':completion:*' cache-path ~/.cache/zcache
 # automatically load bash completion functions
 autoload -U +X bashcompinit && bashcompinit
 
-HISTFILE=~/.zhistory
-HISTSIZE=50000
-SAVEHIST=10000
+# ==========================
+# Keybindings
+# ==========================
 
-
-## Keys
 # Use emacs key bindings
 bindkey -e
 
@@ -208,128 +250,94 @@ if [[ -n "${key[Alt-Right]}" ]]; then
 	bindkey -M vicmd "${key[Alt-Right]}" forward-word
 fi
 
-## ARCHIVE EXTRACTION
-# usage: ex <file>
-ex ()
-{
-  if [ -f "$1" ] ; then
-    case $1 in
-      *.tar.bz2)   tar xjf $1   ;;
-      *.tar.gz)    tar xzf $1   ;;
-      *.bz2)       bunzip2 $1   ;;
-      *.rar)       unrar x $1   ;;
-      *.gz)        gunzip $1    ;;
-      *.tar)       tar xf $1    ;;
-      *.tbz2)      tar xjf $1   ;;
-      *.tgz)       tar xzf $1   ;;
-      *.zip)       unzip $1     ;;
-      *.Z)         uncompress $1;;
-      *.7z)        7z x $1      ;;
-      *.deb)       ar x $1      ;;
-      *.tar.xz)    tar xf $1    ;;
-      *.tar.zst)   unzstd $1    ;;
-      *)           echo "'$1' cannot be extracted via ex()" ;;
-    esac
+# ==========================
+# File Management
+# ==========================
+alias ls='exa -al --color=always --group-directories-first --icons'
+alias la='exa -a --color=always --group-directories-first --icons'
+alias ll='exa -l --color=always --group-directories-first --icons'
+alias lt='exa -aT --color=always --group-directories-first --icons'
+alias l.='exa -a | egrep "^\."'
+alias cd.1='cd ..'
+alias cd.2='cd ../..'
+alias cd.3='cd ../../..'
+alias cd.4='cd ../../../..'
+alias cd.5='cd ../../../../..'
+alias .='cd ..'
+alias ..='cd ../..'
+alias ...='cd ../../..'
+alias ....='cd ../../../..'
+alias .....='cd ../../../../..'
+alias mv='mv -i'
+alias rm='rm -i'
+alias mkdir='mkdir -pv'
+alias dir='dir --color=auto'
+alias vdir='vdir --color=auto'
+
+
+# ==========================
+# Utility Functions
+# ==========================
+
+function quote() {
+  local url="http://api.quotable.io/random"
+  local response=$(curl -s "$url")
+
+  if [[ -n "$response" ]]; then
+    local content=$(echo "$response" | jq -r '.content')
+    local author=$(echo "$response" | jq -r '.author')
+    echo "\"$content\""
+    echo " - $author"
   else
-    echo "'$1' is not a valid file"
+    echo "Failed to retrieve a random quote." >&2
   fi
 }
 
-## Useful aliases
+function weather() {
+  local location=""
+  local glyphs=true
+  local moon=false
+  local format=""
+  local lang="en"
+  local url="https://wttr.in/"
 
-# Replace ls with exa
-alias ls='exa -al --color=always --group-directories-first --icons' # preferred listing
-alias la='exa -a --color=always --group-directories-first --icons'  # all files and dirs
-alias ll='exa -l --color=always --group-directories-first --icons'  # long format
-alias lt='exa -aT --color=always --group-directories-first --icons' # tree listing
-alias l.='exa -a | egrep "^\."'                                     # show only dotfiles
-alias ip="ip -color"
+  # Parse options
+  while getopts "l:g:m:f:L:" opt; do
+    case "${opt}" in
+      l) location="${OPTARG}" ;;  # Location
+      g) glyphs="${OPTARG}" ;;    # Glyphs (true/false)
+      m) moon=true ;;             # Moon phases
+      f) format="${OPTARG}" ;;    # Custom format
+      L) lang="${OPTARG}" ;;      # Language
+      *) echo "Usage: weather [-l location] [-g true|false] [-m] [-f format] [-L lang]" >&2; return 1 ;;
+    esac
+  done
+  shift $((OPTIND -1))
 
-# Common use
-alias grubup="sudo update-grub"
-alias fixpacman="sudo rm /var/lib/pacman/db.lck"
-alias tarnow='tar -acf '
-alias untar='tar -zxvf '
-alias wget='wget -c '
-alias rmpkg="sudo pacman -Rdd"
-alias psmem='ps auxf | sort -nr -k 4'
-alias psmem10='ps auxf | sort -nr -k 4 | head -10'
-alias cd.1="cd .."
-alias cd.2="cd ../.."
-alias cd.3="cd ../../.."
-alias cd.4="cd ../../../.."
-alias cd.5="cd ../../../../.."
-alias cd.6="cd ../../../../../.."
-alias dir='dir --color=auto'
-alias vdir='vdir --color=auto'
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
-alias hw='hwinfo --short'                                   # Hardware Info
-alias big="expac -H M '%m\t%n' | sort -h | nl"              # Sort installed packages according to size in MB (expac must be installed)
-alias gitpkg='pacman -Q | grep -i "\-git" | wc -l'			    # List amount of -git packages
+  # Build URL
+  if [[ "$moon" == true ]]; then
+    url+="Moon"
+  elif [[ -n "$location" ]]; then
+    url+="$location"
+  fi
 
-# Get fastest mirrors 
-alias mirror="sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist" 
-alias mirrord="sudo reflector --latest 50 --number 20 --sort delay --save /etc/pacman.d/mirrorlist" 
-alias mirrors="sudo reflector --latest 50 --number 20 --sort score --save /etc/pacman.d/mirrorlist" 
-alias mirrora="sudo reflector --latest 50 --number 20 --sort age --save /etc/pacman.d/mirrorlist" 
+  if [[ "$glyphs" == false ]]; then
+    url+="?T"  # Disable glyphs
+  else
+    url+="?d"  # Enable glyphs
+  fi
 
-# pacman and yay
-alias pacsyu='sudo pacman -Syu'                           # update only standard pkgs
-alias pacsyyu='sudo pacman -Syyu'                         # Refresh pkglist & update standard pkgs
-alias yaysua='yay -Sua --noconfirm'                       # update only AUR pkgs (yay)
-alias yaysyu='yay -Syu --noconfirm'                       # update standard pkgs and AUR pkgs (yay)
-alias parsua='paru -Sua --noconfirm'                      # update only AUR pkgs (paru)
-alias parsyu='paru -Syu --noconfirm'                      # update standard pkgs and AUR pkgs (paru)
-alias unlock='sudo rm /var/lib/pacman/db.lck'             # remove pacman lock
-alias cleanup='sudo pacman -Rns $(pacman -Qtdq)'          # remove orphaned packages
+  [[ -n "$format" ]] && url+="&format=$format"
+  [[ -n "$lang" ]] && url+="&lang=$lang"
 
-# git
-alias addup='git add -u'
-alias addall='git add .'
-alias branch='git branch'
-alias checkout='git checkout'
-alias clone='git clone'
-alias commit='git commit -m'
-alias fetch='git fetch'
-alias pull='git pull origin'
-alias push='git push origin'
-alias stat='git status'                                   # 'status' is protected name so using 'stat' instead
-alias tag='git tag'
-alias newtag='git tag -a'
+  # Fetch weather data
+  curl -s "$url"
+}
 
-# yt-dlp
-alias yta-aac="yt-dlp --extract-audio --audio-format aac "
-alias yta-best="yt-dlp --extract-audio --audio-format best "
-alias yta-flac="yt-dlp --extract-audio --audio-format flac "
-alias yta-m4a="yt-dlp --extract-audio --audio-format m4a "
-alias yta-mp3="yt-dlp --extract-audio --audio-format mp3 "
-alias yta-opus="yt-dlp --extract-audio --audio-format opus "
-alias yta-vorbis="yt-dlp --extract-audio --audio-format vorbis "
-alias yta-wav="yt-dlp --extract-audio --audio-format wav "
-alias ytv-best="yt-dlp -f bestvideo+bestaudio "
-
-# Get the error messages from journalctl
-alias jctl="journalctl -p 3 -xb"
-
-# Recent installed packages
-alias rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl"
-
-# Replace yay with paru if installed
-[ ! -x /usr/bin/yay ] && [ -x /usr/bin/paru ] && alias yay='paru'
-
-alias config='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-
-alias tozsh="sudo chsh $USER -s /bin/zsh && echo 'Now log out.'"
-alias tobash="sudo chsh $USER -s /bin/bash && echo 'Now log out.'"
-
-# Load Mcfly
 export MCFLY_FUZZY=true
 export MCFLY_RESULTS=20
 export MCFLY_INTERFACE_VIEW=BOTTOM
 export MCFLY_RESULTS_SORT=LAST_RUN
 eval "$(mcfly init zsh)"
 
-## Run neofetch
-neofetch
+fastfetch

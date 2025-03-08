@@ -1,0 +1,54 @@
+.TH WEATHER 1 "March 2025" "1.0" "User Commands"
+
+.SH NAME
+weather \- Get the weather forecast from wttr.in
+
+.SH SYNOPSIS
+.B weather
+[\-l location] [\-g true|false] [\-m] [\-f format] [\-L lang]
+
+.SH DESCRIPTION
+The weather function fetches the weather forecast in ASCII format using the wttr.in service.
+
+.SH OPTIONS
+.TP
+.B \-l location
+Specify the location for the weather forecast. Default: your current location.
+
+.TP
+.B \-g true|false
+Enable (true) or disable (false) weather glyphs. Default: true.
+
+.TP
+.B \-m
+Show moon phase instead of weather.
+
+.TP
+.B \-f format
+Specify a custom format for the forecast.
+
+.TP
+.B \-L lang
+Specify the language (e.g., "en" for English, "fr" for French).
+
+.SH EXAMPLES
+Get the weather for Amman:
+.br
+$ weather -l "Amman"
+
+Disable weather glyphs:
+.br
+$ weather -l "New York" -g false
+
+Show moon phase:
+.br
+$ weather -m
+
+Get the weather in French:
+.br
+$ weather -l "Paris" -L fr
+
+.SH AUTHOR
+Mohammad Abu Mattar
+.br
+GitHub: https://github.com/MKAbuMattar/.dotfiles
