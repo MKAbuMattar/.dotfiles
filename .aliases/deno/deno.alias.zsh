@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+
+# ALIASES
+alias db='deno bundle'
+alias dc='deno compile'
+alias dca='deno cache'
+alias dfmt='deno fmt'
+alias dh='deno help'
+alias dli='deno lint'
+alias drn='deno run'
+alias drA='deno run -A'
+alias drw='deno run --watch'
+alias dru='deno run --unstable'
+alias dts='deno test'
+alias dup='deno upgrade'

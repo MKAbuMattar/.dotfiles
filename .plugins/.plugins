@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# ==========================
+# Plugin System
+# ==========================
+
+# Base directory where plugins are stored
+PLUGIN_BASE_DIR="${HOME}/.config/.dotfiles/.plugins"
+ZSH_PLUGIN_DIR="${PLUGIN_BASE_DIR}/.zsh"
+PYTHON_PLUGIN_DIR="${PLUGIN_BASE_DIR}/.python"
+
+# Function to load plugins
+load_plugins() {
+    local plugins=("$@")
+
+    for plugin in "${plugins[@]}"; do
+        local loaded=false
+
+        # Check for ZSH plugins in .zsh directory
+        local zsh_plugin_path="${ZSH_PLUGIN_DIR}/${plugin}"
+        if [[ -f "${zsh_plugin_path}/${plugin}.zsh" ]]; then
+            source "${zsh_plugin_path}/${plugin}.zsh"
+            loaded=true
+        elif [[ -f "${zsh_plugin_path}/${plugin}.plugin.zsh" ]]; then
+            source "${zsh_plugin_path}/${plugin}.plugin.zsh"
+            loaded=true
+        elif [[ -f "${zsh_plugin_path}/init.zsh" ]]; then
+            source "${zsh_plugin_path}/init.zsh"
+            loaded=true
+        elif [[ -d "${zsh_plugin_path}" ]]; then
+            for file in "${zsh_plugin_path}"/*.zsh(N); do
+                source "$file"
+                loaded=true
+            done
+        fi
+
+        # Check for Python plugins in .python directory and create aliases
+        local python_plugin_path="${PYTHON_PLUGIN_DIR}/${plugin}"
+        if [[ -f "${python_plugin_path}/main.py" ]]; then
+            # Create an alias/function for the plugin
+            eval "${plugin}() { python3.13 '${python_plugin_path}/main.py' \"\$@\"; }"
+            loaded=true
+        elif [[ -f "${python_plugin_path}/${plugin}.py" ]]; then
+            eval "${plugin}() { python3.13 '${python_plugin_path}/${plugin}.py' \"\$@\"; }"
+            loaded=true
+        elif [[ -f "${python_plugin_path}/init.py" ]]; then
+            eval "${plugin}() { python3.13 '${python_plugin_path}/init.py' \"\$@\"; }"
+            loaded=true
+        fi
+
+        if [[ "$loaded" = false ]]; then
+            echo "Warning: Plugin '${plugin}' not found in ${ZSH_PLUGIN_DIR} or ${PYTHON_PLUGIN_DIR}"
+        fi
+    done
+}
+
+# Export the function so it can be used
+export -f load_plugins 2>/dev/null || true

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# ==========================
+# Alias System
+# ==========================
+
+# Base directory where aliases are stored
+ALIAS_BASE_DIR="${HOME}/.config/.dotfiles/.aliases"
+
+# Function to load aliases
+load_aliases() {
+    local aliases=("$@")
+
+    for alias_name in "${aliases[@]}"; do
+        local loaded=false
+
+        # Check for alias files in .alias directory
+        local alias_path="${ALIAS_BASE_DIR}/${alias_name}"
+        if [[ -f "${alias_path}/${alias_name}.alias.zsh" ]]; then
+            source "${alias_path}/${alias_name}.alias.zsh"
+            loaded=true
+        elif [[ -f "${alias_path}/alias.zsh" ]]; then
+            source "${alias_path}/alias.zsh"
+            loaded=true
+        elif [[ -f "${alias_path}.alias.zsh" ]]; then
+            source "${alias_path}.alias.zsh"
+            loaded=true
+        elif [[ -d "${alias_path}" ]]; then
+            for file in "${alias_path}"/*.alias.zsh(N); do
+                source "$file"
+                loaded=true
+            done
+        fi
+
+        if [[ "$loaded" = false ]]; then
+            echo "Warning: Alias '${alias_name}' not found in ${ALIAS_BASE_DIR}"
+        fi
+    done
+}

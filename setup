@@ -1,0 +1,286 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_NAME="$(basename "$0")"
+
+# Colors only when stdout is a TTY (avoids garbage in pipes/CI logs)
+if [ -t 1 ]; then
+    RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
+else
+    RED=''; GREEN=''; YELLOW=''; BLUE=''; NC=''
+fi
+
+usage() {
+    cat <<USAGE
+Usage: $SCRIPT_NAME [OPTIONS]
+Sets up dotfiles symbolic links from the repository to ~/.config/.dotfiles
+allowing you to pull latest changes from GitHub automatically.
+USAGE
+    exit "${1:-0}"
+}
+
+create_symlink() {
+    local source="$1"
+    local target="$2"
+    local name="$3"
+
+    # Check if target already exists
+    if [[ -L "$target" ]]; then
+        # It's a symlink - check if it points to the right place
+        local current_target
+        current_target=$(readlink "$target")
+        if [[ "$current_target" == "$source" ]]; then
+            echo -e "  ${GREEN}✓${NC} $name already linked correctly"
+            return 0
+        else
+            echo -e "  ${YELLOW}!${NC} $name is a symlink to different location: $current_target"
+            read -p "    Replace with new symlink? [y/N] " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                rm "$target"
+            else
+                echo -e "  ${YELLOW}⊘${NC} Skipping $name"
+                return 1
+            fi
+        fi
+    elif [[ -e "$target" ]]; then
+        # It exists but is not a symlink
+        echo -e "  ${YELLOW}!${NC} $name already exists (not a symlink)"
+        read -p "    Backup and replace? [y/N] " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            mv "$target" "${target}.backup.$(date +%Y%m%d_%H%M%S)"
+            echo -e "    ${GREEN}✓${NC} Backed up to ${target}.backup.*"
+        else
+            echo -e "  ${YELLOW}⊘${NC} Skipping $name"
+            return 1
+        fi
+    fi
+
+    # Create the symlink
+    ln -s "$source" "$target"
+    echo -e "  ${GREEN}✓${NC} Created symlink for $name"
+}
+
+setup_zsh_history() {
+    local zsh_dir="$HOME/.zsh"
+
+    if [[ ! -d "$zsh_dir" ]]; then
+        echo -e "\n${BLUE}Setting up ZSH history directory...${NC}"
+        mkdir -p "$zsh_dir"
+        echo -e "  ${GREEN}✓${NC} Created $zsh_dir"
+    fi
+}
+
+build_man_pages() {
+    local builder="$SCRIPT_DIR/.scripts/build-man-pages.py"
+
+    echo -e "\n${BLUE}Building man pages...${NC}"
+
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo -e "  ${YELLOW}!${NC} python3 not found — skipping man-page build"
+        return 0
+    fi
+    if [[ ! -f "$builder" ]]; then
+        echo -e "  ${YELLOW}!${NC} $builder missing — skipping"
+        return 0
+    fi
+
+    if python3 "$builder" >/dev/null 2>&1; then
+        echo -e "  ${GREEN}✓${NC} Built man pages under $SCRIPT_DIR/.man/"
+    else
+        echo -e "  ${YELLOW}!${NC} man-page build failed; run manually: python3 $builder"
+        return 1
+    fi
+
+    # Refresh the apropos index so `apropos <kw>` finds our pages.
+    # mandb runs against the user's own cache; no sudo needed.
+    if command -v mandb >/dev/null 2>&1; then
+        MANPATH="$SCRIPT_DIR/.man" mandb -q -u >/dev/null 2>&1 || true
+        echo -e "  ${GREEN}✓${NC} Refreshed apropos index"
+    fi
+}
+
+setup_gitconfig() {
+    local gitconfig="$HOME/.gitconfig"
+    local gitconfig_dir="$HOME/.config/gitconfig"
+
+    echo -e "\n${BLUE}Setting up Git configuration...${NC}"
+
+    # Check if gitconfig directory exists
+    if [[ ! -d "$gitconfig_dir" ]]; then
+        echo -e "  ${YELLOW}!${NC} No gitconfig directory found at $gitconfig_dir"
+        return 1
+    fi
+
+    # Find all .gitconfig files dynamically
+    local -a gitconfig_files=()
+    while IFS= read -r -d '' file; do
+        gitconfig_files+=("$file")
+    done < <(find -L "$gitconfig_dir" -maxdepth 1 -type f -name "*.gitconfig" ! -name ".user.gitconfig" -print0 | sort -z)
+
+    if [[ ${#gitconfig_files[@]} -eq 0 ]]; then
+        echo -e "  ${YELLOW}!${NC} No gitconfig module files found"
+        return 1
+    fi
+
+    # Build include section
+    local include_section="# Include all gitconfig modules"$'\n'"[include]"
+    for file in "${gitconfig_files[@]}"; do
+        local relative_path="~/.config/gitconfig/$(basename "$file")"
+        include_section+=$'\n\t'"path = $relative_path"
+    done
+
+    # Check if gitconfig exists
+    if [[ -f "$gitconfig" ]]; then
+        # Check if our include section already exists
+        if grep -q "# Include all gitconfig modules" "$gitconfig"; then
+            echo -e "  ${GREEN}✓${NC} Git includes already configured in $gitconfig"
+            return 0
+        else
+            # Prepend include section to existing gitconfig (preserve existing content)
+            local temp_file
+            temp_file="$(mktemp)"
+            # Trap for safety
+            trap 'rm -f "$temp_file"' EXIT ERR
+            
+            echo -e "$include_section\n" > "$temp_file"
+            cat "$gitconfig" >> "$temp_file"
+            mv "$temp_file" "$gitconfig"
+            
+            # Reset trap
+            trap - EXIT ERR
+            
+            echo -e "  ${GREEN}✓${NC} Added gitconfig includes (existing config preserved)"
+        fi
+    else
+        # Create new gitconfig
+        echo -e "$include_section" > "$gitconfig"
+        echo -e "  ${GREEN}✓${NC} Created $gitconfig with includes"
+    fi
+
+    # Show included files
+    echo -e "  ${BLUE}Included modules:${NC}"
+    for file in "${gitconfig_files[@]}"; do
+        echo -e "    - $(basename "$file")"
+    done
+}
+
+main() {
+    if [[ "$#" -gt 0 ]]; then
+        case "$1" in
+            -h|--help) usage 0 ;;
+            *) echo -e "${RED}Error: invalid option '$1'${NC}" >&2; usage 1 ;;
+        esac
+    fi
+
+    local config_dir="$HOME/.config/.dotfiles"
+
+    echo -e "${BLUE}===========================${NC}"
+    echo -e "${BLUE}Dotfiles Setup${NC}"
+    echo -e "${BLUE}===========================${NC}"
+    echo ""
+    echo -e "Repository: ${GREEN}$SCRIPT_DIR${NC}"
+    echo -e "Target:     ${GREEN}$config_dir${NC}"
+    echo ""
+
+    # Create ~/.config if it doesn't exist
+    mkdir -p "$HOME/.config"
+
+    echo -e "${BLUE}Creating symbolic links...${NC}\n"
+
+    # Create main dotfiles directory symlink or individual file symlinks
+    #
+    # SAFETY: if $config_dir is already a symlink whose target IS the repo, we
+    # MUST NOT create individual symlinks inside it — every path inside would
+    # resolve back into the repo itself, and create_symlink would treat the
+    # real source dirs as "non-symlink targets", back them up to empty dirs,
+    # and replace them with self-referencing symlinks. This bug ate the repo
+    # once; never again.
+    if [[ ! -e "$config_dir" ]]; then
+        # Config dir doesn't exist — create whole-repo symlink
+        ln -s "$SCRIPT_DIR" "$config_dir"
+        echo -e "  ${GREEN}✓${NC} Created main symlink: $config_dir -> $SCRIPT_DIR"
+    elif [[ -L "$config_dir" && "$(readlink -f "$config_dir")" == "$SCRIPT_DIR" ]]; then
+        # Already a symlink pointing to us — nothing to do
+        echo -e "  ${GREEN}✓${NC} $config_dir already points at $SCRIPT_DIR (no changes)"
+    else
+        # Config dir exists as a real dir or a symlink to elsewhere
+        # — create individual symlinks for each subtree.
+        echo -e "${YELLOW}$config_dir already exists (real dir or other-target symlink), creating individual symlinks...${NC}\n"
+
+        create_symlink "$SCRIPT_DIR/.plugins" "$config_dir/.plugins" ".plugins"
+        create_symlink "$SCRIPT_DIR/.utils" "$config_dir/.utils" ".utils"
+        create_symlink "$SCRIPT_DIR/.zsh" "$config_dir/.zsh" ".zsh"
+        create_symlink "$SCRIPT_DIR/.aliases" "$config_dir/.aliases" ".aliases"
+        create_symlink "$SCRIPT_DIR/.docs" "$config_dir/.docs" ".docs"
+        create_symlink "$SCRIPT_DIR/.man" "$config_dir/.man" ".man"
+        create_symlink "$SCRIPT_DIR/.scripts" "$config_dir/.scripts" ".scripts"
+        create_symlink "$SCRIPT_DIR/.zshrc" "$config_dir/.zshrc" ".zshrc"
+    fi
+
+    # Link .config subdirectories to ~/.config/
+    echo -e "\n${BLUE}Linking .config subdirectories...${NC}"
+    if [[ -d "$SCRIPT_DIR/.config" ]]; then
+        for item in "$SCRIPT_DIR/.config"/*; do
+            if [[ -e "$item" ]]; then
+                local item_name
+                item_name=$(basename "$item")
+                create_symlink "$item" "$HOME/.config/$item_name" ".config/$item_name"
+            fi
+        done
+    else
+        echo -e "  ${YELLOW}!${NC} No .config directory found in repository"
+    fi
+
+    # Create symlink for .zshrc in home directory
+    echo -e "\n${BLUE}Linking .zshrc to home directory...${NC}"
+    create_symlink "$config_dir/.zshrc" "$HOME/.zshrc" "~/.zshrc"
+
+    # Setup ZSH history directory
+    setup_zsh_history
+
+    # Setup gitconfig includes
+    setup_gitconfig || true
+
+    # Build man pages so `man <module>` works
+    build_man_pages || true
+
+    # Check for required tools
+    echo -e "\n${BLUE}Checking for required tools...${NC}"
+    local -a required_tools=("git" "zsh")
+    local -a missing_tools=()
+
+    for tool in "${required_tools[@]}"; do
+        if command -v "$tool" >/dev/null 2>&1; then
+            echo -e "  ${GREEN}✓${NC} $tool installed"
+        else
+            echo -e "  ${RED}✗${NC} $tool not found"
+            missing_tools+=("$tool")
+        fi
+    done
+
+    if [[ ${#missing_tools[@]} -gt 0 ]]; then
+        echo -e "\n${YELLOW}Warning: Missing required tools: ${missing_tools[*]}${NC}"
+    fi
+
+    # Summary
+    echo -e "\n${BLUE}===========================${NC}"
+    echo -e "${GREEN}Setup Complete!${NC}"
+    echo -e "${BLUE}===========================${NC}"
+    echo ""
+    echo -e "Your dotfiles are now linked to this repository."
+    echo -e "Any changes you pull from GitHub will be reflected immediately."
+    echo ""
+    echo -e "${YELLOW}Next steps:${NC}"
+    echo -e "  1. Install Starship prompt: ${BLUE}curl -sS https://starship.rs/install.sh | sh${NC}"
+    echo -e "  2. Source your new configuration: ${BLUE}source ~/.zshrc${NC}"
+    echo -e "  3. Or restart your terminal"
+    echo ""
+    echo -e "${BLUE}Repository location:${NC} $SCRIPT_DIR"
+    echo -e "${BLUE}To update:${NC} cd $SCRIPT_DIR && git pull"
+    echo ""
+}
+
+main "$@"

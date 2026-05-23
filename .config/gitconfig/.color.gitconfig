@@ -1,0 +1,4 @@
+[color "decorate"]
+    HEAD   = bold blink italic 196
+    branch = 214
+    tag    = bold 222

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "linux-script-developer": {
+      "source": "mkabumattar/skills",
+      "sourceType": "github",
+      "skillPath": "linux-script-developer/SKILL.md",
+      "computedHash": "59d719bf5c412e06811f5c9a40489fd4bafda2521ff2cff17e1868fea472fdde"
+    },
+    "python-script-developer": {
+      "source": "mkabumattar/skills",
+      "sourceType": "github",
+      "skillPath": "python-script-developer/SKILL.md",
+      "computedHash": "5fa300c82c2ea3ab1d1e5237416b204e8d0786c87cde1719b353781f135cfe73"
+    }
+  }
+}

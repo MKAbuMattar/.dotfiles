@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# ==========================
+# Utils System
+# ==========================
+
+# Base directory where utils are stored
+UTILS_BASE_DIR="${HOME}/.config/.dotfiles/.utils"
+
+# Function to load utils
+load_utils() {
+    local utils=("$@")
+
+    for util_name in "${utils[@]}"; do
+        local loaded=false
+
+        # Check for util files in .utils directory
+        local util_path="${UTILS_BASE_DIR}/${util_name}"
+        if [[ -f "${util_path}/${util_name}.util.zsh" ]]; then
+            source "${util_path}/${util_name}.util.zsh"
+            loaded=true
+        elif [[ -f "${util_path}/util.zsh" ]]; then
+            source "${util_path}/util.zsh"
+            loaded=true
+        elif [[ -f "${util_path}.util.zsh" ]]; then
+            source "${util_path}.util.zsh"
+            loaded=true
+        elif [[ -d "${util_path}" ]]; then
+            for file in "${util_path}"/*.util.zsh(N); do
+                source "$file"
+                loaded=true
+            done
+        fi
+
+        if [[ "$loaded" = false ]]; then
+            echo "Warning: Util '${util_name}' not found in ${UTILS_BASE_DIR}"
+        fi
+    done
+}
