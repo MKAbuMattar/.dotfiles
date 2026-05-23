@@ -48,18 +48,29 @@ load_plugins() {
             done
         fi
 
-        # Check for Python plugins in .python directory and create aliases
+        # Check for Python plugins in .python directory and create aliases.
+        # Refuse to shadow common shell builtins / keywords — doing so breaks
+        # nvm, compinit, hash -r, etc.  A plugin that wants those names must
+        # be renamed in its own directory (e.g. `hash` → `hasher`).
         local python_plugin_path="${PYTHON_PLUGIN_DIR}/${plugin}"
-        if [[ -f "${python_plugin_path}/main.py" ]]; then
-            # Create an alias/function for the plugin
-            eval "${plugin}() { ${py} '${python_plugin_path}/main.py' \"\$@\"; }"
-            loaded=true
-        elif [[ -f "${python_plugin_path}/${plugin}.py" ]]; then
-            eval "${plugin}() { ${py} '${python_plugin_path}/${plugin}.py' \"\$@\"; }"
-            loaded=true
-        elif [[ -f "${python_plugin_path}/init.py" ]]; then
-            eval "${plugin}() { ${py} '${python_plugin_path}/init.py' \"\$@\"; }"
-            loaded=true
+        local _reserved=(hash cd pwd echo printf read test type which command builtin source eval exec exit jobs kill set unset export local declare typeset alias unalias bind history fg bg wait time)
+        if [[ -f "${python_plugin_path}/main.py" || -f "${python_plugin_path}/${plugin}.py" || -f "${python_plugin_path}/init.py" ]]; then
+            if (( ${_reserved[(I)$plugin]} )); then
+                echo "Warning: Python plugin '${plugin}' shadows a shell builtin; skipping. Rename the plugin directory." >&2
+            else
+                # Make sure we're not stacking on a stale function from a
+                # previous source (e.g. the directory was renamed since).
+                unfunction "${plugin}" 2>/dev/null
+                unalias    "${plugin}" 2>/dev/null
+                if [[ -f "${python_plugin_path}/main.py" ]]; then
+                    eval "${plugin}() { ${py} '${python_plugin_path}/main.py' \"\$@\"; }"
+                elif [[ -f "${python_plugin_path}/${plugin}.py" ]]; then
+                    eval "${plugin}() { ${py} '${python_plugin_path}/${plugin}.py' \"\$@\"; }"
+                else
+                    eval "${plugin}() { ${py} '${python_plugin_path}/init.py' \"\$@\"; }"
+                fi
+                loaded=true
+            fi
         fi
 
         if [[ "$loaded" = false ]]; then

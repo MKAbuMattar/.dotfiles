@@ -1,22 +1,22 @@
-# hash
+# hasher
 
 ## NAME
 
-**hash** — compute md5/sha1/sha256/sha384/sha512/blake2b digests of strings or files.
+**hasher** — compute md5/sha1/sha256/sha384/sha512/blake2b digests of strings or files.
 
 ## SYNOPSIS
 
 ```
-hash sha256 --text "hello world"
-hash sha256 --file /path/to/file
-hash md5    --file file1 file2 file3
+hasher sha256 --text "hello world"
+hasher sha256 --file /path/to/file
+hasher md5    --file file1 file2 file3
 ```
 
 ## DESCRIPTION
 
-Wraps `hashlib.new(algo)` to produce hex digests for either a single UTF-8
+Wraps `hasherlib.new(algo)` to produce hex digests for either a single UTF-8
 string or one or more files. Files are streamed in 64 KiB chunks
-(`chunk_size = 1 << 16`) so arbitrarily large inputs hash with constant
+(`chunk_size = 1 << 16`) so arbitrarily large inputs hasher with constant
 memory. No third-party dependencies, no network access.
 
 ## OPTIONS
@@ -24,8 +24,8 @@ memory. No third-party dependencies, no network access.
 | Option           | Type    | Default | Description                                                                                       |
 | ---------------- | ------- | ------- | ------------------------------------------------------------------------------------------------- |
 | `algo` (pos.)    | enum    | —       | Hash algorithm. Required. One of the values listed under **Algorithms** below.                    |
-| `-t`, `--text`   | string  | —       | Text to hash (encoded as UTF-8). Mutually exclusive with `--file`.                                |
-| `-f`, `--file`   | path... | —       | One or more files to hash. Mutually exclusive with `--text`.                                      |
+| `-t`, `--text`   | string  | —       | Text to hasher (encoded as UTF-8). Mutually exclusive with `--file`.                                |
+| `-f`, `--file`   | path... | —       | One or more files to hasher. Mutually exclusive with `--text`.                                      |
 | `-h`, `--help`   | flag    | —       | Show help and exit.                                                                               |
 
 Exactly one of `--text` or `--file` must be provided (argparse mutually
@@ -47,11 +47,11 @@ exclusive group, `required=True`).
 ## EXAMPLES
 
 ```bash
-hash sha256 --text "hello world"                       # single digest
-hash md5 --file ./Downloads/iso.img                    # one file
-hash sha512 --file *.tar.gz                            # many files
-hash blake2b --text "$(cat /etc/hostname)"             # piped input via shell
-hash sha1 -f a.bin b.bin c.bin                         # short flag
+hasher sha256 --text "hello world"                       # single digest
+hasher md5 --file ./Downloads/iso.img                    # one file
+hasher sha512 --file *.tar.gz                            # many files
+hasher blake2b --text "$(cat /etc/hostname)"             # piped input via shell
+hasher sha1 -f a.bin b.bin c.bin                         # short flag
 ```
 
 ## OUTPUT
@@ -85,7 +85,7 @@ Any files passed via `--file` (read-only).
 
 ## REQUIREMENTS
 
-- Python 3.9+ (stdlib only: `hashlib`, `argparse`, `pathlib`).
+- Python 3.9+ (stdlib only: `hasherlib`, `argparse`, `pathlib`).
 
 ## SEE ALSO
 

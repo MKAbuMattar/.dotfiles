@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""hash — compute md5/sha1/sha256/sha384/sha512/blake2b digests of strings or files.
+"""hasher — compute md5/sha1/sha256/sha384/sha512/blake2b digests of strings or files.
+
+Renamed from ``hash`` because that name shadows the zsh/bash builtin used by
+``nvm.sh`` and other tooling to refresh the shell's command lookup table.
 
 Usage:
-    hash sha256 --text "hello world"
-    hash sha256 --file /path/to/file
-    hash md5    --file file1 file2 file3
+    hasher sha256 --text "hello world"
+    hasher sha256 --file /path/to/file
+    hasher md5    --file file1 file2 file3
 """
 
 from __future__ import annotations

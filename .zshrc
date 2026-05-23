@@ -44,6 +44,7 @@ UTILS=(
     # "tmux"
     "git"
     # "mvn"
+    "node"
     "npm"
     "pip"
     # "poetry"
@@ -128,7 +129,7 @@ PLUGINS=(
     "base64"
     "clock"
     "emoji"
-    "hash"
+    "hasher"
     "httpserve"
     "matrix"
     "password-gen"
@@ -209,3 +210,7 @@ eval "$(starship init zsh)"
 
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /usr/bin/terraform terraform
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
