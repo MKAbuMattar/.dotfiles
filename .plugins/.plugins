@@ -9,9 +9,23 @@ PLUGIN_BASE_DIR="${HOME}/.config/.dotfiles/.plugins"
 ZSH_PLUGIN_DIR="${PLUGIN_BASE_DIR}/.zsh"
 PYTHON_PLUGIN_DIR="${PLUGIN_BASE_DIR}/.python"
 
+# Resolve the best available Python 3 interpreter once at source time.
+# Override by exporting DOTFILES_PYTHON before sourcing ~/.zshrc.
+if [[ -z "${DOTFILES_PYTHON:-}" ]]; then
+    for _py in python3.14 python3.13 python3.12 python3.11 python3.10 python3.9 python3 python; do
+        if command -v "$_py" >/dev/null 2>&1; then
+            DOTFILES_PYTHON="$_py"
+            break
+        fi
+    done
+    unset _py
+fi
+export DOTFILES_PYTHON
+
 # Function to load plugins
 load_plugins() {
     local plugins=("$@")
+    local py="${DOTFILES_PYTHON:-python3}"
 
     for plugin in "${plugins[@]}"; do
         local loaded=false
@@ -38,13 +52,13 @@ load_plugins() {
         local python_plugin_path="${PYTHON_PLUGIN_DIR}/${plugin}"
         if [[ -f "${python_plugin_path}/main.py" ]]; then
             # Create an alias/function for the plugin
-            eval "${plugin}() { python3.13 '${python_plugin_path}/main.py' \"\$@\"; }"
+            eval "${plugin}() { ${py} '${python_plugin_path}/main.py' \"\$@\"; }"
             loaded=true
         elif [[ -f "${python_plugin_path}/${plugin}.py" ]]; then
-            eval "${plugin}() { python3.13 '${python_plugin_path}/${plugin}.py' \"\$@\"; }"
+            eval "${plugin}() { ${py} '${python_plugin_path}/${plugin}.py' \"\$@\"; }"
             loaded=true
         elif [[ -f "${python_plugin_path}/init.py" ]]; then
-            eval "${plugin}() { python3.13 '${python_plugin_path}/init.py' \"\$@\"; }"
+            eval "${plugin}() { ${py} '${python_plugin_path}/init.py' \"\$@\"; }"
             loaded=true
         fi
 
