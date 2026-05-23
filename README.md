@@ -6,17 +6,20 @@ man-page system so `man <module>` and `apropos <keyword>` work for everything
 in here.
 
 ```text
-.aliases/   — per-tool alias modules (33 modules)
-.utils/     — per-tool shell function libraries (15 modules)
-.plugins/   — zsh plugins (38 in-scope + 5 vendored) + 8 Python CLI plugins
+.aliases/   — per-tool alias modules (35 modules)
+.utils/     — per-tool shell function libraries (17 modules)
+.plugins/   — zsh plugins (40 in-scope + 5 vendored) + 8 Python CLI plugins
 .zsh/       — core zsh settings (options, completion, keybindings)
 .config/    — third-party app configs (kitty, btop, mpv, …)
-.docs/      — AWS-style markdown man pages (source of truth — 98 pages)
+.docs/      — AWS-style markdown man pages (source of truth — 104 pages)
 .man/       — generated roff man pages (built by .scripts/build-man-pages.py)
 .scripts/   — build & maintenance scripts
 .agents/    — Claude Code skills used to author this repo
 setup       — one-shot bootstrap (idempotent; safe to re-run)
 ```
+
+> Cross-distro package-management modules ship for: **arch / debian / fedora /
+> opensuse / alpine** (aliases + utils + plugins for each).
 
 ## Quick start
 

@@ -28,14 +28,17 @@ The script takes no positional arguments.
 
 ## Supported Platforms
 
-| Platform              | Supported | Notes                                     |
-| --------------------- | --------- | ----------------------------------------- |
-| Linux (Ubuntu/Debian) | Yes       | Bash 4.0+, requires `zsh` and `git`       |
-| Linux (RHEL/Fedora)   | Yes       | Bash 4.0+, requires `zsh` and `git`       |
-| macOS                 | Yes       | Bash 3.2+ (system) or Bash 5 via Homebrew |
-| Windows (WSL)         | Yes       | WSL 1 or WSL 2 with `zsh` available       |
-| Windows (Git Bash)    | Partial   | Symlink creation requires Developer Mode  |
-| Windows (MSYS2)       | Partial   | Same caveat as Git Bash                   |
+| Platform                         | Supported | Notes                                        |
+| -------------------------------- | --------- | -------------------------------------------- |
+| Linux (Ubuntu/Debian)            | Yes       | Bash 4.0+, requires `zsh` and `git`          |
+| Linux (RHEL/Fedora/Nobara)       | Yes       | Bash 4.0+, requires `zsh` and `git`          |
+| Linux (Arch/Manjaro/EndeavourOS) | Yes       | Bash 4.0+, requires `zsh` and `git`          |
+| Linux (openSUSE)                 | Yes       | Bash 4.0+, requires `zsh` and `git`          |
+| Linux (Alpine)                   | Partial   | Needs `bash` package (BusyBox ash won't run) |
+| macOS                            | Yes       | Bash 3.2+ (system) or Bash 5 via Homebrew    |
+| Windows (WSL)                    | Yes       | WSL 1 or WSL 2 with `zsh` available          |
+| Windows (Git Bash)               | Partial   | Symlink creation requires Developer Mode     |
+| Windows (MSYS2)                  | Partial   | Same caveat as Git Bash                      |
 
 ## Prerequisites
 

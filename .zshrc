@@ -32,10 +32,12 @@ source "$HOME/.config/.dotfiles/.utils/.utils"
 
 # Define your utils here
 UTILS=(
+    # "alpine"
     # "arch"
     "clipboard"
     # "debian"
     "fedora"
+    # "opensuse"
     "git"
     # "mvn"
     "npm"
@@ -62,6 +64,7 @@ source "$HOME/.config/.dotfiles/.plugins/.plugins"
 PLUGINS=(
     # ZSH Plugins:
     "1password"
+    # "alpine"
     # "ansible"
     # "arch"
     # "argocd"
@@ -77,6 +80,7 @@ PLUGINS=(
     # "flutter"
     # "fluxcd"
     "fedora"
+    # "opensuse"
     "fzf"
     # "gcp"
     "gh"
@@ -127,6 +131,7 @@ source "$HOME/.config/.dotfiles/.aliases/.aliases"
 
 # Define your aliases here
 ALIASES=(
+    # "alpine"
     # "ansible"
     # "arch"
     # "azure"
@@ -137,6 +142,7 @@ ALIASES=(
     # "dotnet"
     "exa"
     "fedora"
+    # "opensuse"
     "files"
     # "flutter"
     "general"
