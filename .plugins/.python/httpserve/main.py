@@ -35,14 +35,20 @@ def lan_ip() -> str:
 
 
 def find_free_port(preferred: int) -> int:
-    """Return ``preferred`` if it's free, else pick a random free TCP port."""
+    """Return ``preferred`` if it's free, else pick a random free TCP port.
+
+    SO_REUSEADDR is set on the probe socket so a recently-closed listener in
+    TIME_WAIT does not push us off our preferred port.
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
         s.bind(("", preferred))
         return preferred
     except OSError:
         s.close()
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(("", 0))
         return s.getsockname()[1]
     finally:
