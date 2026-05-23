@@ -26,11 +26,11 @@ releases (you can simply `alias exa=eza` before this module loads).
 
 | Alias | Expansion                                                  | Description                            |
 | ----- | ---------------------------------------------------------- | -------------------------------------- |
-| `ls`  | `exa -al --color=always --group-directories-first --icons` | Long listing including hidden entries. |
-| `la`  | `exa -a --color=always --group-directories-first --icons`  | Plain listing including hidden.        |
-| `ll`  | `exa -l --color=always --group-directories-first --icons`  | Long listing without hidden.           |
-| `lt`  | `exa -aT --color=always --group-directories-first --icons` | Recursive tree, hidden included.       |
-| `l.`  | `exa -a \| egrep "^\."`                                    | Show only dotfiles in cwd.             |
+| `ls`  | `eza -al --color=always --group-directories-first --icons` | Long listing including hidden entries. |
+| `la`  | `eza -a --color=always --group-directories-first --icons`  | Plain listing including hidden.        |
+| `ll`  | `eza -l --color=always --group-directories-first --icons`  | Long listing without hidden.           |
+| `lt`  | `eza -aT --color=always --group-directories-first --icons` | Recursive tree, hidden included.       |
+| `l.`  | `eza -a \| egrep "^\."`                                    | Show only dotfiles in cwd.             |
 
 ## REQUIREMENTS
 

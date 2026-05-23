@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
-alias ls='exa -al --color=always --group-directories-first --icons'
-alias la='exa -a --color=always --group-directories-first --icons'
-alias ll='exa -l --color=always --group-directories-first --icons'
-alias lt='exa -aT --color=always --group-directories-first --icons'
-alias l.='exa -a | egrep "^\."'
+alias ls='eza -al --color=always --group-directories-first --icons'
+alias la='eza -a --color=always --group-directories-first --icons'
+alias ll='eza -l --color=always --group-directories-first --icons'
+alias lt='eza -aT --color=always --group-directories-first --icons'
+alias l.='eza -a | egrep "^\."'
